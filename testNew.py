@@ -19,12 +19,14 @@ x = seek(start, H, 3, 2, 1e-6)
 print x 
 
 
-G = getGraph(c125_9, N125_9)
+G = getGraph(b200_4, N200_4)
 #We add the main diagonal (that's really it).
 H2 = graphToH(G)
 
-x = np.ones(N125_9)/np.sqrt(N125_9) 
-y = seek(x, H2, 36, 4, 1e-8)
+x = np.ones(N200_4)/np.sqrt(N200_4)
+#No idea why; fractional exponents work better
+#Something about how the value is computed.
+y = seek2(x, H2, 2.3, 1e-8)
 R = biggestClique(ReLu(y), G)
 print R
 print len(R)

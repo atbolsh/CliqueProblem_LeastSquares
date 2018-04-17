@@ -62,10 +62,24 @@ def seek(x, H2, target, n = 1, cutoff=1e-6):
     errors = []
     u = np.sqrt(target)
     # The thing to set to 0. We have error, renormalization, and target clique size.
-    F = lambda y : np.array([energy(y, M, n), 0.5*np.sum(y*y) - 0.5, u*np.sum(y) - target])
+    F = lambda y : np.array([(N**n)*energy(y, M, n), 0.5*np.sum(y*y) - 0.5, u*np.sum(y) - target])
     # Jacobian
-    J = lambda y : np.vstack((n*(y**(n-1))*np.matmul(M, y**n), y, u*np.ones(N)))
+    J = lambda y : np.vstack(((N**n)*n*(y**(n-1))*np.matmul(M, y**n), y, u*np.ones(N)))
     z = least_squares(F, x, gtol=cutoff, xtol=cutoff, ftol=cutoff)
+    print z
+    return z.x
+
+def seek2(x, H2, n = 1, cutoff=1e-6):
+    """The main loop"""
+    M  = getM(H2)
+    m  = getm(H2)
+    N = H2.shape[0]
+    errors = []
+    # The thing to set to 0. We have error, renormalization, and target clique size.
+    F = lambda y : np.array([(N**(n))*energy(y, M, n), 0.5*np.sum(y*y) - 0.5])
+    # Jacobian
+    J = lambda y : np.vstack((2*(N**(n))*n*(y**(n-1))*np.matmul(M, y**n), y))
+    z = least_squares(F, x, jac=J, method='dogbox', gtol=cutoff, xtol=cutoff, ftol=cutoff)
     print z
     return z.x
 
