@@ -1,3 +1,5 @@
+from minimize import *
+
 import math
 from copy import deepcopy
 
@@ -62,12 +64,12 @@ def seek(x, H2, target, n = 1, cutoff=1e-6):
     errors = []
     u = np.sqrt(target)
     # The thing to set to 0. We have error, renormalization, and target clique size.
-    F = lambda y : np.array([(N**n)*energy(y, M, n), np.sum(y*y) - 1, np.sum(y) - u])
+    F = lambda y : np.array([(N**n)*energy(y, M, n), 0.5*np.sum(y*y) - 0.5, u*np.sum(y) - target])
     # Jacobian
-    J = lambda y : np.vstack((2*(N**n)*n*(y**(n-1))*np.matmul(M, y**n), 2*y, np.ones(N)))
-    z = least_squares(F, x, gtol=cutoff, xtol=cutoff, ftol=cutoff)
+    J = lambda y : np.vstack(((N**n)*n*(y**(n-1))*np.matmul(M, y**n), y, u*np.ones(N)))
+    z = geolm_minimize(F, x, jac=J, geo=True)
     print z
-    return z.x
+    return z
 
 def seek2(x, H2, n = 1, cutoff=1e-6):
     """The main loop"""
@@ -76,11 +78,11 @@ def seek2(x, H2, n = 1, cutoff=1e-6):
     N = H2.shape[0]
     errors = []
     # The thing to set to 0. We have error, renormalization, and target clique size.
-    F = lambda y : np.array([(N**(n))*energy((y), M, n), 0.5*np.sum(y*y) - 0.5])
+    F = lambda y : np.array(((N**n)*energy(np.fabs(y), M, n), np.sum(y*y) - 1))
     # Jacobian
-    J = lambda y : np.vstack((2*(N**(n))*n*((y)**(n-1))*np.matmul(M, (y)**n), y))
-    z = least_squares(F, x, jac=J, method='dogbox', gtol=cutoff, xtol=cutoff, ftol=cutoff)
+    J = lambda y : np.vstack(((N**n)*2*n*np.sign(y)*(np.fabs(y)**(n-1))*np.matmul(M, (np.fabs(y)**n)), 2*y))
+    z = geolm_minimize(F, x, jac=J, geo=True)
     print z
-    return z.x
+    return z
 
 
